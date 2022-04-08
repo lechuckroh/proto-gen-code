@@ -1,0 +1,105 @@
+version: "3"
+
+vars:
+  BINARY_TS: protogen-ts
+  BUILD_DIR: build
+  BUILD_DATE:
+    sh: date -u +.b%y%m%d-%H%M%S
+  LD_FLAGS: -s -w -X main.buildDateVersion={{.BUILD_DATE}}
+  PACKAGE_TS: github.com/lechuckroh/protogencode/cmd/protogen-ts
+
+tasks:
+  clean:
+    cmds:
+      - rm -f {{.BINARY_TS}}
+
+  build-ts:
+    cmds:
+      - go build -mod=vendor -v -ldflags "{{.LD_FLAGS}}" -buildvcs=false -o {{.BINARY_TS}} {{.PACKAGE_TS}}
+    env:
+      CGO_ENABLED: 0
+      GO111MODULE: on
+
+  # build package for Mac x64
+  build-ts-mac-amd64:
+    cmds:
+      - mkdir -p {{.BUILD_DIR}}/$GOOS-$GOARCH
+      - go build -mod=vendor -v -ldflags "{{.LD_FLAGS}}" -o {{.BUILD_DIR}}/$GOOS-$GOARCH/{{.BINARY_TS}} {{.PACKAGE_TS}}
+    env:
+      CGO_ENABLED: 0
+      GO111MODULE: on
+      GOOS: darwin
+      GOARCH: amd64
+
+  package-mac-amd64:
+    cmds:
+      - mkdir -p {{.BUILD_DIR}}/$GOOS-$GOARCH
+      - go build -mod=vendor -v -ldflags "{{.LD_FLAGS}}" -o {{.BUILD_DIR}}/$GOOS-$GOARCH/{{.BINARY_TS}} {{.PACKAGE_TS}}
+      - rm -f {{.BUILD_DIR}}/protogen-$GOOS-$GOARCH.tgz
+      - tar czvf {{.BUILD_DIR}}/protogen-$GOOS-$GOARCH.tgz -C {{.BUILD_DIR}}/$GOOS-$GOARCH/ {{.BINARY_TS}}
+      - rm -rf {{.BUILD_DIR}}/$GOOS-$GOARCH
+    env:
+      CGO_ENABLED: 0
+      GO111MODULE: on
+      GOOS: darwin
+      GOARCH: amd64
+
+  # build package for Mac ARM64
+  build-ts-mac-arm64:
+    cmds:
+      - mkdir -p {{.BUILD_DIR}}/$GOOS-$GOARCH
+      - go build -mod=vendor -v -ldflags "{{.LD_FLAGS}}" -o {{.BUILD_DIR}}/$GOOS-$GOARCH/{{.BINARY_TS}} {{.PACKAGE_TS}}
+    env:
+      CGO_ENABLED: 0
+      GO111MODULE: on
+      GOOS: darwin
+      GOARCH: arm64
+
+  package-mac-arm64:
+    cmds:
+      - mkdir -p {{.BUILD_DIR}}/$GOOS-$GOARCH
+      - go build -mod=vendor -v -ldflags "{{.LD_FLAGS}}" -o {{.BUILD_DIR}}/$GOOS-$GOARCH/{{.BINARY_TS}} {{.PACKAGE_TS}}
+      - rm -f {{.BUILD_DIR}}/protogen-$GOOS-$GOARCH.tgz
+      - tar czvf {{.BUILD_DIR}}/protogen-$GOOS-$GOARCH.tgz -C {{.BUILD_DIR}}/$GOOS-$GOARCH/ {{.BINARY_TS}}
+      - rm -rf {{.BUILD_DIR}}/$GOOS-$GOARCH
+    env:
+      CGO_ENABLED: 0
+      GO111MODULE: on
+      GOOS: darwin
+      GOARCH: arm64
+
+  # build package for Linux x64
+  build-ts-linux-amd64:
+    cmds:
+      - mkdir -p {{.BUILD_DIR}}/$GOOS-$GOARCH
+      - go build -mod=vendor -v -ldflags "{{.LD_FLAGS}}" -o {{.BUILD_DIR}}/$GOOS-$GOARCH/{{.BINARY_TS}} {{.PACKAGE_TS}}
+    env:
+      CGO_ENABLED: 0
+      GO111MODULE: on
+      GOOS: linux
+      GOARCH: amd64
+
+  package-linux-amd64:
+    cmds:
+      - mkdir -p {{.BUILD_DIR}}/$GOOS-$GOARCH
+      - go build -mod=vendor -v -ldflags "{{.LD_FLAGS}}" -o {{.BUILD_DIR}}/$GOOS-$GOARCH/{{.BINARY_TS}} {{.PACKAGE_TS}}
+      - rm -f {{.BUILD_DIR}}/protogen-$GOOS-$GOARCH.tgz
+      - tar czvf {{.BUILD_DIR}}/protogen-$GOOS-$GOARCH.tgz -C {{.BUILD_DIR}}/$GOOS-$GOARCH/ {{.BINARY_TS}}
+      - rm -rf {{.BUILD_DIR}}/$GOOS-$GOARCH
+    env:
+      CGO_ENABLED: 0
+      GO111MODULE: on
+      GOOS: linux
+      GOARCH: amd64
+
+  # build all packages
+  package-all:
+    cmds:
+      - task: clean
+      - task: package-linux-amd64
+      - task: package-mac-amd64
+      - task: package-mac-arm64
+
+  vendor:
+    cmds:
+      - go mod vendor
