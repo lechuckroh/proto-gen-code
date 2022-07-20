@@ -12,7 +12,7 @@ func generateConstants(wr io.Writer, ctx *GenContext) error {
 	tplText := `{{- range .Enums}}export const {{.Name}} = {
   {{- range .Fields}}
   {{.Name}}: {{.Number}},{{end}}
-};
+} as const;
 
 {{end}}
 `
