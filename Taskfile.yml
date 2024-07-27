@@ -1,113 +1,133 @@
 version: "3"
 
 vars:
-  BINARY_TS: protogen-ts
-  BUILD_DIR: build
+  DIST_DIR: ./dist
   BUILD_DATE:
     sh: date -u +.b%y%m%d-%H%M%S
   LD_FLAGS: -s -w -X main.buildDateVersion={{.BUILD_DATE}}
-  PACKAGE_TS: github.com/lechuckroh/protogencode/cmd/protogen-ts
 
 tasks:
+  # --------------------------------------------------------------------------
+  # internal tasks
+  # --------------------------------------------------------------------------
+  build:
+    internal: true
+    cmds:
+      - go build -ldflags "{{.LD_FLAGS}}" -buildvcs=false -o {{.DIST_DIR}}/{{.APP}} ./cmd/{{.APP}}
+    env:
+      CGO_ENABLED: 0
+    requires:
+      vars: [APP]
+
+  build-windows-amd64:
+    internal: true
+    cmds:
+      - go build -ldflags "{{.LD_FLAGS}}" -buildvcs=false -o {{.DIST_DIR}}/{{.APP}}-windows-amd64.exe ./cmd/{{.APP}}
+    env:
+      CGO_ENABLED: 0
+      GOOS: windows
+      GOARCH: amd64
+    requires:
+      vars: [APP]
+
+  build-darwin-arm64:
+    internal: true
+    cmds:
+      - go build -ldflags "{{.LD_FLAGS}}" -buildvcs=false -o {{.DIST_DIR}}/{{.APP}}-darwin-arm64 ./cmd/{{.APP}}
+    env:
+      CGO_ENABLED: 0
+      GOOS: darwin
+      GOARCH: arm64
+    requires:
+      vars: [APP]
+
+  build-linux-amd64:
+    internal: true
+    cmds:
+      - go build -ldflags "{{.LD_FLAGS}}" -buildvcs=false -o {{.DIST_DIR}}/{{.APP}}-linux-amd64 ./cmd/{{.APP}}
+    env:
+      CGO_ENABLED: 0
+      GOOS: linux
+      GOARCH: amd64
+    requires:
+      vars: [APP]
+
+  # --------------------------------------------------------------------------
+  # build all
+  # --------------------------------------------------------------------------
+
   clean:
     cmds:
-      - rm -f {{.BINARY_TS}}
+      - rm -rf {{.DIST_DIR}}
 
-  build-ts:
+  build-all:
     cmds:
-      - go build -mod=vendor -v -ldflags "{{.LD_FLAGS}}" -buildvcs=false -o {{.BINARY_TS}} {{.PACKAGE_TS}}
-    env:
-      CGO_ENABLED: 0
-      GO111MODULE: on
+      - task: build-protogen-all
+      - task: build-protogen-ts-all
 
-  # build package for Mac x64
-  build-ts-mac-amd64:
-    cmds:
-      - mkdir -p {{.BUILD_DIR}}/$GOOS-$GOARCH
-      - go build -mod=vendor -v -ldflags "{{.LD_FLAGS}}" -o {{.BUILD_DIR}}/$GOOS-$GOARCH/{{.BINARY_TS}} {{.PACKAGE_TS}}
-    env:
-      CGO_ENABLED: 0
-      GO111MODULE: on
-      GOOS: darwin
-      GOARCH: amd64
+  # --------------------------------------------------------------------------
+  # dependencies
+  # --------------------------------------------------------------------------
 
-  package-mac-amd64:
+  update-all:
     cmds:
-      - mkdir -p {{.BUILD_DIR}}/$GOOS-$GOARCH
-      - go build -mod=vendor -v -ldflags "{{.LD_FLAGS}}" -o {{.BUILD_DIR}}/$GOOS-$GOARCH/{{.BINARY_TS}} {{.PACKAGE_TS}}
-      - rm -f {{.BUILD_DIR}}/protogen-$GOOS-$GOARCH.tgz
-      - tar czvf {{.BUILD_DIR}}/protogen-$GOOS-$GOARCH.tgz -C {{.BUILD_DIR}}/$GOOS-$GOARCH/ {{.BINARY_TS}}
-      - rm -rf {{.BUILD_DIR}}/$GOOS-$GOARCH
-    env:
-      CGO_ENABLED: 0
-      GO111MODULE: on
-      GOOS: darwin
-      GOARCH: amd64
+      - go get -u ./...
 
-  # build package for Mac ARM64
-  build-ts-mac-arm64:
-    cmds:
-      - mkdir -p {{.BUILD_DIR}}/$GOOS-$GOARCH
-      - go build -mod=vendor -v -ldflags "{{.LD_FLAGS}}" -o {{.BUILD_DIR}}/$GOOS-$GOARCH/{{.BINARY_TS}} {{.PACKAGE_TS}}
-    env:
-      CGO_ENABLED: 0
-      GO111MODULE: on
-      GOOS: darwin
-      GOARCH: arm64
+  # --------------------------------------------------------------------------
+  # protogen
+  # --------------------------------------------------------------------------
 
-  package-mac-arm64:
+  build-protogen:
     cmds:
-      - mkdir -p {{.BUILD_DIR}}/$GOOS-$GOARCH
-      - go build -mod=vendor -v -ldflags "{{.LD_FLAGS}}" -o {{.BUILD_DIR}}/$GOOS-$GOARCH/{{.BINARY_TS}} {{.PACKAGE_TS}}
-      - rm -f {{.BUILD_DIR}}/protogen-$GOOS-$GOARCH.tgz
-      - tar czvf {{.BUILD_DIR}}/protogen-$GOOS-$GOARCH.tgz -C {{.BUILD_DIR}}/$GOOS-$GOARCH/ {{.BINARY_TS}}
-      - rm -rf {{.BUILD_DIR}}/$GOOS-$GOARCH
-    env:
-      CGO_ENABLED: 0
-      GO111MODULE: on
-      GOOS: darwin
-      GOARCH: arm64
+      - task: build
+        vars:
+          APP: protogen
 
-  # build package for Linux x64
-  build-ts-linux-amd64:
+  build-protogen-all:
     cmds:
-      - mkdir -p {{.BUILD_DIR}}/$GOOS-$GOARCH
-      - go build -mod=vendor -v -ldflags "{{.LD_FLAGS}}" -o {{.BUILD_DIR}}/$GOOS-$GOARCH/{{.BINARY_TS}} {{.PACKAGE_TS}}
-    env:
-      CGO_ENABLED: 0
-      GO111MODULE: on
-      GOOS: linux
-      GOARCH: amd64
+      - task: build-windows-amd64
+        vars:
+          APP: protogen
+      - task: build-darwin-arm64
+        vars:
+          APP: protogen
+      - task: build-linux-amd64
+        vars:
+          APP: protogen
 
-  package-linux-amd64:
+  run-protogen:
     cmds:
-      - mkdir -p {{.BUILD_DIR}}/$GOOS-$GOARCH
-      - go build -mod=vendor -v -ldflags "{{.LD_FLAGS}}" -o {{.BUILD_DIR}}/$GOOS-$GOARCH/{{.BINARY_TS}} {{.PACKAGE_TS}}
-      - rm -f {{.BUILD_DIR}}/protogen-$GOOS-$GOARCH.tgz
-      - tar czvf {{.BUILD_DIR}}/protogen-$GOOS-$GOARCH.tgz -C {{.BUILD_DIR}}/$GOOS-$GOARCH/ {{.BINARY_TS}}
-      - rm -rf {{.BUILD_DIR}}/$GOOS-$GOARCH
-    env:
-      CGO_ENABLED: 0
-      GO111MODULE: on
-      GOOS: linux
-      GOARCH: amd64
+      - go run cmd/protogen/*.go {{.CLI_ARGS}}
 
-  # build all packages
-  package-all:
-    cmds:
-      - task: clean
-      - task: package-linux-amd64
-      - task: package-mac-amd64
-      - task: package-mac-arm64
+  # --------------------------------------------------------------------------
+  # protogen-ts
+  # --------------------------------------------------------------------------
 
-  vendor:
+  build-protogen-ts:
     cmds:
-      - go mod vendor
+      - task: build
+        vars:
+          APP: protogen-ts
 
-  protogen-ts:
-    summary: "Generate *.ts from test proto file"
+  build-protogen-ts-all:
     cmds:
-      - go run cmd/protogen-ts/*.go 
+      - task: build-windows-amd64
+        vars:
+          APP: protogen-ts
+      - task: build-darwin-arm64
+        vars:
+          APP: protogen-ts
+      - task: build-linux-amd64
+        vars:
+          APP: protogen-ts
+
+  run-protogen-ts:
+    cmds:
+      - go run cmd/protogen-ts/*.go {{.CLI_ARGS}}
+
+  run-protogen-ts-test:
+    cmds:
+      - go run cmd/protogen-ts/*.go
         --proto test/proto/constants.proto
         --const test/output/constants.ts
         --msg test/output/constantMessages.ts
