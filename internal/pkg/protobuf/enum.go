@@ -1,7 +1,7 @@
 package protobuf
 
 import (
-	"github.com/lechuckroh/protogencode/internal/util/fp"
+	"github.com/lechuckroh/protogencode/internal/pkg/util/fp"
 	parser "github.com/yoheimuta/go-protoparser/v4/parser"
 )
 

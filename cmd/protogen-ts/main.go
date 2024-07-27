@@ -3,8 +3,8 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/lechuckroh/protogencode/internal/protobuf"
-	"github.com/lechuckroh/protogencode/internal/util"
+	protobuf2 "github.com/lechuckroh/protogencode/internal/pkg/protobuf"
+	util2 "github.com/lechuckroh/protogencode/internal/pkg/util"
 	"github.com/pkg/errors"
 	"log"
 	"os"
@@ -40,14 +40,14 @@ func GenerateAction(c *cli.Context) error {
 	includes := c.StringSlice(FlagInclude)
 
 	// *.proto 파일 로드
-	p, err := protobuf.LoadProtoFile(protoFile)
+	p, err := protobuf2.LoadProtoFile(protoFile)
 	if err != nil {
 		return errors.Wrap(err, fmt.Sprintf("failed to read %s", protoFile))
 	}
-	proto := protobuf.NewProto(p, protobuf.ProtoOption{
+	proto := protobuf2.NewProto(p, protobuf2.ProtoOption{
 		Includes: includes,
 		Excludes: excludes,
-		NameMap:  util.KeyValueSlicesToMap(renameParams),
+		NameMap:  util2.KeyValueSlicesToMap(renameParams),
 	})
 
 	// context
@@ -64,7 +64,7 @@ func GenerateAction(c *cli.Context) error {
 		if err := generateConstants(constBuf, ctx); err != nil {
 			return err
 		}
-		if err := util.WriteStringToFile(constFile, constBuf.String()); err != nil {
+		if err := util2.WriteStringToFile(constFile, constBuf.String()); err != nil {
 			return err
 		}
 	}
@@ -75,7 +75,7 @@ func GenerateAction(c *cli.Context) error {
 		if err := generateMessages(msgBuf, ctx); err != nil {
 			return err
 		}
-		if err := util.WriteStringToFile(msgFile, msgBuf.String()); err != nil {
+		if err := util2.WriteStringToFile(msgFile, msgBuf.String()); err != nil {
 			return err
 		}
 	}

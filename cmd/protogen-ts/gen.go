@@ -1,6 +1,8 @@
 package main
 
-import "github.com/lechuckroh/protogencode/internal/protobuf"
+import (
+	"github.com/lechuckroh/protogencode/internal/pkg/protobuf"
+)
 
 type GenContext struct {
 	Proto         protobuf.Proto

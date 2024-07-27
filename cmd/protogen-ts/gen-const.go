@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/lechuckroh/protogencode/internal/util"
+	"github.com/lechuckroh/protogencode/internal/pkg/util"
 	"io"
 	"text/template"
 )

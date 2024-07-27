@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/lechuckroh/protogencode/internal/protobuf"
-	"github.com/lechuckroh/protogencode/internal/util"
-	"github.com/lechuckroh/protogencode/internal/util/fp"
+	"github.com/lechuckroh/protogencode/internal/pkg/protobuf"
+	util2 "github.com/lechuckroh/protogencode/internal/pkg/util"
+	"github.com/lechuckroh/protogencode/internal/pkg/util/fp"
 	"io"
 	"strings"
 	"text/template"
@@ -41,14 +41,14 @@ func generateMessages(wr io.Writer, ctx *GenContext) error {
 {{end}}
 `
 
-	tpl, err := util.NewTemplate("message", tplText, funcMap)
+	tpl, err := util2.NewTemplate("message", tplText, funcMap)
 	if err != nil {
 		return err
 	}
 
 	return tpl.Execute(wr, map[string]interface{}{
 		"importTypes": strings.Join(getMessageImportTypes(proto.Enums()), ", "),
-		"constFile":   util.GetBaseFilename(ctx.ConstFile),
+		"constFile":   util2.GetBaseFilename(ctx.ConstFile),
 		"proto":       proto,
 	})
 }

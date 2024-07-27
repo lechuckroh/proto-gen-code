@@ -1,7 +1,7 @@
 package protobuf
 
 import (
-	"github.com/lechuckroh/protogencode/internal/util/fp"
+	fp2 "github.com/lechuckroh/protogencode/internal/pkg/util/fp"
 	"github.com/yoheimuta/go-protoparser/v4/parser"
 )
 
@@ -48,14 +48,14 @@ func (p *ProtoImpl) Enums() []Enum {
 func filterEnums(enums []Enum, includes []string, excludes []string) []Enum {
 	acceptNotExcluded := len(includes) == 0
 
-	return fp.Filter(enums, func(enum Enum) bool {
+	return fp2.Filter(enums, func(enum Enum) bool {
 		predicate := func(s string) bool {
 			return s == enum.Name()
 		}
-		if fp.Any(includes, predicate) {
+		if fp2.Any(includes, predicate) {
 			return true
 		}
-		if fp.Any(excludes, predicate) {
+		if fp2.Any(excludes, predicate) {
 			return false
 		}
 		return acceptNotExcluded
