@@ -8,8 +8,8 @@ Source code generator from protobuf file
 ```shell
 # Generate *.ts from *.proto
 $ ./protogen-ts \
-    --proto _test/constants.proto \
-    --const _test/constants.ts \
-    --msg _test/constantMessages.ts \
+    --proto test/proto/constants.proto \
+    --const test/output/constants.ts \
+    --msg test/output/constantMessages.ts \
     --rename Error=ErrorType
 ```

@@ -103,3 +103,12 @@ tasks:
   vendor:
     cmds:
       - go mod vendor
+
+  protogen-ts:
+    summary: "Generate *.ts from test proto file"
+    cmds:
+      - go run cmd/protogen-ts/*.go 
+        --proto test/proto/constants.proto
+        --const test/output/constants.ts
+        --msg test/output/constantMessages.ts
+        --rename Error=ErrorType
